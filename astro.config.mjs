@@ -56,7 +56,13 @@ export default defineConfig({
 			},
 		}),
 		expressiveCode({
-			themes: [expressiveCodeConfig.theme, expressiveCodeConfig.theme],
+			themes: [
+				expressiveCodeConfig.theme,
+				expressiveCodeConfig.darkTheme ?? expressiveCodeConfig.theme,
+			],
+			themeCssSelector: (theme) =>
+				theme.type === "dark" ? ".dark" : ":root:not(.dark)",
+			useDarkModeMediaQuery: false,
 			plugins: [
 				pluginCollapsibleSections(),
 				pluginLineNumbers(),
@@ -91,9 +97,12 @@ export default defineConfig({
 					terminalTitlebarBorderBottomColor: "none",
 				},
 				textMarkers: {
-					delHue: 0,
-					insHue: 180,
-					markHue: 250,
+					delHue: 350,
+					insHue: 130,
+					markHue: 285,
+					defaultChroma: "20",
+					defaultLuminance: ["20%", "90%"],
+					backgroundOpacity: "0.85",
 				},
 			},
 			frames: {

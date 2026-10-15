@@ -141,12 +141,26 @@
 }
 
 .custom-md spoiler {
-  @apply bg-[var(--codeblock-bg)] hover:bg-transparent px-1 py-0.5 overflow-hidden rounded-md transition-all duration-150;
+    @apply bg-[var(--btn-regular-bg-hover)] px-1 py-0.5 overflow-hidden rounded-md transition-all duration-150 cursor-pointer;
 
-  &:not(:hover) {
-    color: var(--codeblock-bg);
+    &:not(:hover):not(.revealed) {
+    color: transparent;
     * {
-        color: var(--codeblock-bg);
+        color: transparent;
     }
-  }
+    }
+    &:hover, &.revealed {
+    @apply bg-transparent;
+    }
+    &::selection, & *::selection {
+    color: var(--deep-text);
+    background-color: var(--selection-bg);
+    }
+}
+
+:root.dark .custom-md spoiler {
+    &::selection, & *::selection {
+    color: oklch(0.95 0.02 var(--hue));
+    background-color: var(--selection-bg);
+    }
 }

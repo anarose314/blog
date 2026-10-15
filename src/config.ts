@@ -39,8 +39,8 @@ export const siteConfig: SiteConfig = {
 		//   sizes: '32x32',              // (Optional) Size of the favicon, set only if you have favicons of different sizes
 		// }
 		{
-			src: '/favicon/favicon.png'
-		}
+			src: "/favicon/favicon.png",
+		},
 	],
 };
 
@@ -62,9 +62,9 @@ export const profileConfig: ProfileConfig = {
 	name: "Anarose",
 	bio: "Frontend / Web Publisher",
 	credit: {
-        enable: false,
-        text: "",
-    },
+		enable: false,
+		text: "",
+	},
 	links: [
 		// {
 		// 	name: "Twitter",
@@ -95,6 +95,6 @@ export const licenseConfig: LicenseConfig = {
 export const expressiveCodeConfig: ExpressiveCodeConfig = {
 	// Note: Some styles (such as background color) are being overridden, see the astro.config.mjs file.
 	// Please select a dark theme, as this blog theme currently only supports dark background color
-	// theme: "github-dark",
-	theme: "rose-pine",
+	theme: "rose-pine-dawn",
+	darkTheme: "rose-pine-moon",
 };

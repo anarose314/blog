@@ -19,12 +19,16 @@ export function pluginLanguageBadge() {
         font-size: 0.75rem;
         font-weight: bold;
         text-transform: uppercase;
-        color: oklch(0.75 0.1 var(--hue));
-        background: oklch(0.33 0.035 var(--hue));
+        color: oklch(0.5 0.12 var(--hue));
+        background: oklch(0.9 0.05 var(--hue));
         border-radius: 0.5rem;
         pointer-events: none;
         transition: opacity 0.3s;
         opacity: 0;
+      }
+      :root.dark [data-language]::before {
+        color: oklch(0.75 0.1 var(--hue));
+        background: oklch(0.33 0.035 var(--hue));
       }
       .frame:not(.has-title):not(.is-terminal) {
         @media (hover: none) {

@@ -1,4 +1,5 @@
 ---
+import path from "node:path";
 import BackToTop from "@components/control/BackToTop.astro";
 import Footer from "@components/Footer.astro";
 import Navbar from "@components/Navbar.astro";
@@ -10,7 +11,7 @@ import TOC from "../components/widget/TOC.astro";
 import { siteConfig } from "../config";
 import {
 	BANNER_HEIGHT,
-	BANNER_HEIGHT_EXTEND,
+	BANNER_MAX_HEIGHT,
 	MAIN_PANEL_OVERLAPS_BANNER_HEIGHT,
 } from "../constants/constants";
 import Layout from "./Layout.astro";
@@ -37,8 +38,31 @@ const hasBannerCredit =
 const hasBannerLink = !!siteConfig.banner.credit.url;
 
 const mainPanelTop = siteConfig.banner.enable
-	? `calc(${BANNER_HEIGHT}vh - ${MAIN_PANEL_OVERLAPS_BANNER_HEIGHT}rem)`
+	? `calc(min(${BANNER_HEIGHT}vh, ${BANNER_MAX_HEIGHT}px) - ${MAIN_PANEL_OVERLAPS_BANNER_HEIGHT}rem)`
 	: "5.5rem";
+
+let bannerAspect = "3 / 1";
+if (siteConfig.banner.enable && siteConfig.banner.blurFill) {
+	const bannerSrc = siteConfig.banner.src;
+	const isLocal = !(
+		bannerSrc.startsWith("/") ||
+		bannerSrc.startsWith("http") ||
+		bannerSrc.startsWith("data:")
+	);
+	if (isLocal) {
+		const files = import.meta.glob<ImageMetadata>("../**", {
+			import: "default",
+		});
+		const normalizedPath = path
+			.normalize(path.join("../", bannerSrc))
+			.replace(/\\/g, "/");
+		const loader = files[normalizedPath];
+		if (loader) {
+			const meta = await loader();
+			bannerAspect = `${meta.width} / ${meta.height}`;
+		}
+	}
+}
 ---
 
 <Layout title={title} banner={banner} description={description} lang={lang} setOGTypeArticle={setOGTypeArticle}>
@@ -52,15 +76,31 @@ const mainPanelTop = siteConfig.banner.enable
 </div>
 
 <!-- Banner -->
-{siteConfig.banner.enable && <div id="banner-wrapper" class={`absolute z-10 w-full transition duration-700 overflow-hidden`} style={`top: -${BANNER_HEIGHT_EXTEND}vh`}>
-    <ImageWrapper id="banner" alt="Banner image of the blog" class:list={["object-cover h-full transition duration-700 opacity-0 scale-105"]}
-                  src={siteConfig.banner.src} position={siteConfig.banner.position}
-    >
-    </ImageWrapper>
-</div>}
+{siteConfig.banner.enable && (
+    <div id="banner-wrapper" class="absolute z-10 w-full transition duration-700 overflow-hidden" style={`top: calc(var(--banner-height) - var(--banner-height-home))`}>
+        {siteConfig.banner.blurFill ? (
+            <>
+                <!-- 뒤 배경: 블러 -->
+                <div class="absolute inset-0 blur-2xl scale-110 opacity-70" aria-hidden="true">
+                    <ImageWrapper alt="" class="w-full h-full" src={siteConfig.banner.src} position={siteConfig.banner.position} />
+                </div>
+                <!-- 앞 이미지: 좌우 페이드 -->
+                <div class="relative h-full mx-auto max-w-full 2xl:[mask-image:linear-gradient(to_right,transparent,rgba(0,0,0,0.4)_8%,black_22%,black_78%,rgba(0,0,0,0.4)_92%,transparent)] 2xl:[-webkit-mask-image:linear-gradient(to_right,transparent,rgba(0,0,0,0.4)_8%,black_22%,black_78%,rgba(0,0,0,0.4)_92%,transparent)]" style={`aspect-ratio: ${bannerAspect}`}>
+                    <ImageWrapper id="banner" alt="Banner image of the blog"
+                        class:list={["w-full h-full transition duration-700 opacity-0 scale-105"]}
+                        src={siteConfig.banner.src} position={siteConfig.banner.position} />
+                </div>
+            </>
+        ) : (
+            <ImageWrapper id="banner" alt="Banner image of the blog"
+                class:list={["object-cover h-full transition duration-700 opacity-0 scale-105"]}
+                src={siteConfig.banner.src} position={siteConfig.banner.position} />
+        )}
+    </div>
+)}
 
 <!-- Main content -->
-<div class="absolute w-full z-30 pointer-events-none" style={`top: ${mainPanelTop}`}>
+<div id="main-panel" class="absolute w-full z-30 pointer-events-none" style={`top: ${mainPanelTop}`}>
     <!-- The pointer-events-none here prevent blocking the click event of the TOC -->
     <div class="relative max-w-[var(--page-width)] mx-auto pointer-events-auto">
         <div id="main-grid" class="transition duration-700 w-full left-0 right-0 grid grid-cols-[17.5rem_auto] grid-rows-[auto_1fr_auto] lg:grid-rows-[auto]
@@ -87,13 +127,13 @@ const mainPanelTop = siteConfig.banner.enable
                     <!-- the overflow-hidden here prevent long text break the layout-->
                     <!-- make id different from windows.swup global property -->
                     <slot></slot>
-                    <div class="footer col-span-2 onload-animation hidden lg:block">
+                    <!-- <div class="footer col-span-2 onload-animation hidden lg:block">
                         <Footer></Footer>
-                    </div>
+                    </div> -->
                 </div>
             </main>
 
-            <div class="footer col-span-2 onload-animation block lg:hidden">
+            <div class="footer col-span-2 onload-animation block">
                 <Footer></Footer>
             </div>
         </div>

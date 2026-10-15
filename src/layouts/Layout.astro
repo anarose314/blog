@@ -1,7 +1,7 @@
 ---
-import "@fontsource/roboto/400.css";
-import "@fontsource/roboto/500.css";
-import "@fontsource/roboto/700.css";
+import "@fontsource/nunito/400.css";
+import "@fontsource/nunito/500.css";
+import "@fontsource/nunito/800.css";
 
 import ConfigCarrier from "@components/ConfigCarrier.astro";
 import { profileConfig, siteConfig } from "@/config";
@@ -10,6 +10,7 @@ import {
 	BANNER_HEIGHT,
 	BANNER_HEIGHT_EXTEND,
 	BANNER_HEIGHT_HOME,
+	BANNER_MAX_HEIGHT,
 	DARK_MODE,
 	DEFAULT_THEME,
 	LIGHT_MODE,
@@ -64,8 +65,8 @@ if (!lang) {
 const siteLang = lang.replace("_", "-");
 
 const bannerOffsetByPosition = {
-	top: `${BANNER_HEIGHT_EXTEND}vh`,
-	center: `${BANNER_HEIGHT_EXTEND / 2}vh`,
+	top: "var(--banner-height-extend)",
+	center: "calc(var(--banner-height-extend) / 2)",
 	bottom: "0",
 };
 const bannerOffset =
@@ -110,7 +111,7 @@ const bannerOffset =
 		))}
 
 		<!-- Set the theme before the page is rendered to avoid a flash -->
-		<script is:inline define:vars={{DEFAULT_THEME, LIGHT_MODE, DARK_MODE, AUTO_MODE, BANNER_HEIGHT_EXTEND, PAGE_WIDTH, configHue}}>
+		<script is:inline define:vars={{DEFAULT_THEME, LIGHT_MODE, DARK_MODE, AUTO_MODE, BANNER_HEIGHT, BANNER_HEIGHT_HOME, BANNER_MAX_HEIGHT, PAGE_WIDTH, configHue}}>
 			// Load the theme from local storage
 			const theme = localStorage.getItem('theme') || DEFAULT_THEME;
 			switch (theme) {
@@ -133,7 +134,10 @@ const bannerOffset =
 			document.documentElement.style.setProperty('--hue', hue);
 
 			// calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
-			let offset = Math.floor(window.innerHeight * (BANNER_HEIGHT_EXTEND / 100));
+			const vh = window.innerHeight / 100;
+			const bannerH = Math.min(BANNER_HEIGHT * vh, BANNER_MAX_HEIGHT);
+			const homeH = Math.min(BANNER_HEIGHT_HOME * vh, BANNER_MAX_HEIGHT);
+			let offset = Math.floor(homeH - bannerH);
 			offset = offset - offset % 4;
 			document.documentElement.style.setProperty('--banner-height-extend', `${offset}px`);
 		</script>
@@ -148,9 +152,11 @@ const bannerOffset =
 		<link rel="alternate" type="application/rss+xml" title={profileConfig.name} href={`${Astro.site}rss.xml`}/>
 
 	</head>
-	<body class=" min-h-screen transition " class:list={[{"lg:is-home": isHomePage, "enable-banner": enableBanner}]}
-		  data-overlayscrollbars-initialize
-	>
+	<body class=" min-h-screen transition " class:list={[{
+		"lg:is-home": isHomePage,
+		"enable-banner": enableBanner,
+		"banner-hide-mobile": enableBanner && siteConfig.banner.hideOnMobile,
+	}]}>
 		<ConfigCarrier></ConfigCarrier>
 		<slot />
 
@@ -161,9 +167,21 @@ const bannerOffset =
 
 <style is:global define:vars={{
 	bannerOffset,
-	'banner-height-home': `${BANNER_HEIGHT_HOME}vh`,
-	'banner-height': `${BANNER_HEIGHT}vh`,
+	'banner-height-home': `min(${BANNER_HEIGHT_HOME}vh, ${BANNER_MAX_HEIGHT}px)`,
+	'banner-height': `min(${BANNER_HEIGHT}vh, ${BANNER_MAX_HEIGHT}px)`,
 }}>
+@font-face {
+	font-family: "NanumSquareNeo";
+	src: url("https://hangeul.pstatic.net/hangeul_static/webfont/NanumSquareNeo/NanumSquareNeoTTF-bRg.woff2") format("woff2");
+	font-weight: 400;
+	font-display: swap;
+}
+@font-face {
+	font-family: "NanumSquareNeo";
+	src: url("https://hangeul.pstatic.net/hangeul_static/webfont/NanumSquareNeo/NanumSquareNeoTTF-dEb.woff2") format("woff2");
+	font-weight: 800;
+	font-display: swap;
+}
 @tailwind components;
 @layer components {
 	.enable-banner.is-home #banner-wrapper {
@@ -192,6 +210,35 @@ const bannerOffset =
 		@apply opacity-0 -translate-y-16
 	}
 }
+.custom-md img[src*="img.shields.io"] {
+	display: inline-block !important;
+	margin: 0 0.25rem 0.25rem 0 !important;
+	border-radius: 0.25rem;
+	vertical-align: middle;
+	cursor: default;
+}
+
+.custom-md p:has(> img[src*="img.shields.io"]) {
+	margin: 0.5rem 0 !important;
+}
+@media (max-width: 639.98px) {
+	.banner-hide-mobile #banner-wrapper,
+	.banner-hide-mobile #banner-credit {
+		display: none !important;
+	}
+	.banner-hide-mobile #top-row {
+		height: auto !important;
+	}
+	.banner-hide-mobile #main-panel {
+		top: 5.5rem !important;
+	}
+	.banner-hide-mobile #main-grid {
+		transform: none !important;
+	}
+	.banner-hide-mobile #sidebar-sticky {
+		top: 1rem !important;
+	}
+}
 </style>
 
 <script>
@@ -208,6 +255,7 @@ import {
 	BANNER_HEIGHT,
 	BANNER_HEIGHT_HOME,
 	BANNER_HEIGHT_EXTEND,
+	BANNER_MAX_HEIGHT,
 	MAIN_PANEL_OVERLAPS_BANNER_HEIGHT
 } from "../constants/constants";
 import { siteConfig } from '../config';
@@ -257,7 +305,12 @@ function disableAnimation() {
 */
 
 const bannerEnabled = !!document.getElementById('banner-wrapper')
-
+const hideBannerOnMobile = !!siteConfig.banner.hideOnMobile
+const isBannerActive = () =>
+	bannerEnabled && !(hideBannerOnMobile && window.innerWidth < 640)
+const clampBanner = (vh: number) =>
+	Math.min(window.innerHeight * (vh / 100), BANNER_MAX_HEIGHT);
+	
 function setClickOutsideToClose(panel: string, ignores: string[]) {
 	document.addEventListener("click", event => {
 		let panelDom = document.getElementById(panel);
@@ -392,10 +445,10 @@ const setup = () => {
 		document.documentElement.style.setProperty('--content-delay', '0ms')
 
 		// prevent elements from overlapping the navbar
-		if (!bannerEnabled) {
+		if (!isBannerActive()) {
 			return
 		}
-		let threshold = window.innerHeight * (BANNER_HEIGHT / 100) - 72 - 16
+		let threshold = clampBanner(BANNER_HEIGHT) - 72 - 16
 		let navbar = document.getElementById('navbar-wrapper')
 		if (!navbar || !document.body.classList.contains('lg:is-home')) {
 			return
@@ -458,7 +511,7 @@ let backToTopBtn = document.getElementById('back-to-top-btn');
 let toc = document.getElementById('toc-wrapper');
 let navbar = document.getElementById('navbar-wrapper')
 function scrollFunction() {
-	let bannerHeight = window.innerHeight * (BANNER_HEIGHT / 100)
+	let bannerHeight = clampBanner(BANNER_HEIGHT)
 
 	if (backToTopBtn) {
 		if (document.body.scrollTop > bannerHeight || document.documentElement.scrollTop > bannerHeight) {
@@ -476,16 +529,19 @@ function scrollFunction() {
 		}
 	}
 
-	if (!bannerEnabled) return
+	if (!isBannerActive()) {
+		navbar?.classList.remove('navbar-hidden')
+		return
+	}
 	if (navbar) {
 		const NAVBAR_HEIGHT = 72
-		const MAIN_PANEL_EXCESS_HEIGHT = MAIN_PANEL_OVERLAPS_BANNER_HEIGHT * 16			// The height the main panel overlaps the banner
+		const MAIN_PANEL_EXCESS_HEIGHT = MAIN_PANEL_OVERLAPS_BANNER_HEIGHT * 16
 
-		let bannerHeight = BANNER_HEIGHT
+		let navBannerHeight = clampBanner(BANNER_HEIGHT)
 		if (document.body.classList.contains('lg:is-home') && window.innerWidth >= 1024) {
-			bannerHeight = BANNER_HEIGHT_HOME
+			navBannerHeight = clampBanner(BANNER_HEIGHT_HOME)
 		}
-		let threshold = window.innerHeight * (bannerHeight / 100) - NAVBAR_HEIGHT - MAIN_PANEL_EXCESS_HEIGHT - 16
+		let threshold = navBannerHeight - NAVBAR_HEIGHT - MAIN_PANEL_EXCESS_HEIGHT - 16
 		if (document.body.scrollTop >= threshold || document.documentElement.scrollTop >= threshold) {
 			navbar.classList.add('navbar-hidden')
 		} else {
@@ -497,7 +553,7 @@ window.onscroll = scrollFunction
 
 window.onresize = () => {
 	// calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
-	let offset = Math.floor(window.innerHeight * (BANNER_HEIGHT_EXTEND / 100));
+	let offset = Math.floor(clampBanner(BANNER_HEIGHT_HOME) - clampBanner(BANNER_HEIGHT));
 	offset = offset - offset % 4;
 	document.documentElement.style.setProperty('--banner-height-extend', `${offset}px`);
 }
@@ -513,7 +569,7 @@ let pswp = import("photoswipe")
 
 function createPhotoSwipe() {
 	lightbox = new PhotoSwipeLightbox({
-		gallery: ".custom-md img, #post-cover img",
+		gallery: '.custom-md img:not([src*="img.shields.io"]), #post-cover img',
 		pswpModule: () => pswp,
 		closeSVG: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff"><path d="M480-424 284-228q-11 11-28 11t-28-11q-11-11-11-28t11-28l196-196-196-196q-11-11-11-28t11-28q11-11 28-11t28 11l196 196 196-196q11-11 28-11t28 11q11 11 11 28t-11 28L536-480l196 196q11 11 11 28t-11 28q-11 11-28 11t-28-11L480-424Z"/></svg>',
 		zoomSVG: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff"><path d="M340-540h-40q-17 0-28.5-11.5T260-580q0-17 11.5-28.5T300-620h40v-40q0-17 11.5-28.5T380-700q17 0 28.5 11.5T420-660v40h40q17 0 28.5 11.5T500-580q0 17-11.5 28.5T460-540h-40v40q0 17-11.5 28.5T380-460q-17 0-28.5-11.5T340-500v-40Zm40 220q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l224 224q11 11 11 28t-11 28q-11 11-28 11t-28-11L532-372q-30 24-69 38t-83 14Zm0-80q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/></svg>',

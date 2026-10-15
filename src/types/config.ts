@@ -24,6 +24,8 @@ export type SiteConfig = {
 		enable: boolean;
 		src: string;
 		position?: "top" | "center" | "bottom";
+		blurFill?: boolean;
+		hideOnMobile?: boolean;
 		credit: {
 			enable: boolean;
 			text: string;
@@ -64,6 +66,10 @@ export type ProfileConfig = {
 	avatar?: string;
 	name: string;
 	bio?: string;
+	credit: {
+		enable: boolean;
+		text: string;
+	};
 	links: {
 		name: string;
 		url: string;

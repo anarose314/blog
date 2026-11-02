@@ -1,7 +1,7 @@
 # 프로필
 개발하면서 배운 것들을 기록하는 블로그
 
-### ✨ 기술 스택
+### ✨ SKILLS
 
 <p>
 <img src="https://img.shields.io/badge/Next.js-F5C6D8?style=for-the-badge&logo=next.js&logoColor=4a2c3a" />
@@ -42,6 +42,6 @@
 <img src="https://img.shields.io/badge/Slack-EBD0EC?style=for-the-badge" />
 </p>
 
-### 🎨 이미지 출처
+### 🎨 IMAGE SOURCE
 >- **Banner / Profile**: matcha0904
 >- **Favicon**: mommnnm

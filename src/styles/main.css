@@ -116,6 +116,13 @@
     @apply cursor-zoom-in
 }
 
+.custom-md iframe, .video-container {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    border-radius: var(--radius-large);
+}
+
 ::selection {
     background-color: var(--selection-bg)
 }

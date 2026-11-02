@@ -114,6 +114,40 @@
 
     }
 
+    .image-grid {
+        @apply my-6 grid gap-3 items-start;
+        grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
+
+        .image-grid-item {
+            @apply m-0 flex min-w-0 flex-col justify-end;
+        }
+        .image-grid-frame {
+            @apply overflow-hidden rounded-xl bg-[var(--btn-regular-bg)];
+            aspect-ratio: var(--aspect, 16/10);
+        }
+        .image-grid-frame img {
+            @apply m-0 h-full w-full rounded-none transition-transform duration-300;
+            object-fit: var(--fit, cover);
+        }
+        .image-grid-item:hover img {
+            @apply scale-[1.03];
+        }
+        figcaption {
+            @apply mt-1.5 text-center text-[0.8rem] text-50;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .custom-md .image-grid {
+            grid-template-columns: repeat(var(--cols-md, 2), minmax(0, 1fr));
+        }
+    }
+    @media (max-width: 479px) {
+        .custom-md .image-grid {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
     .katex-display-container {
         max-width: 100%;
         overflow-x: auto;
